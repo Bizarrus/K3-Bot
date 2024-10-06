@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="Konsole.css" />
+    </head>
+    <body>
+        <ui-tabs>
+            <input type="radio" id="socket" name="tabs" checked />
+            <input type="radio" id="send" name="tabs" />
+
+            <nav>
+                <ul>
+                    <li class="tab"><label for="socket">Kommunikation</label></li>
+                    <li class="tab"><label for="send">Senden</label></li>
+                </ul>
+            </nav>
+            <main>
+                <article>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-size="time">Zeit</th>
+                                <th data-size="type">Typ</th>
+                                <th data-size="operation">Operation</th>
+                                <th data-size="initiator">Initiator</th>
+                                <th data-size="send">Übertragen</th>
+                                <th data-size="receive">Größe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logger">
+                            <!-- Dynamic -->
+                        </tbody>
+                        <tfoot class="hide">
+                            <!-- Dynamic -->
+                        </tfoot>
+                    </table>
+                </article>
+                <article>Query Builder,..</article>
+            </main>
+        </ui-tabs>
+        <script src="Konsole.js"></script>
+    </body>
+</html>

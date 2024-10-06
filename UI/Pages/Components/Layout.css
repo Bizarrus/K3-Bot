@@ -1,0 +1,24 @@
+:root {
+    --background: red;
+    --background-dark: red;
+    --primary: red;
+    --color: red;
+    --border: red;
+}
+
+:root, :root.theme-dark {
+    --background: #18181A;
+    --background-dark: #0C0C0D;
+    --primary: #0A84ff;
+    --secondary: #2E2E32;
+    --color: #FFFFFF;
+    --border: #38383D;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    background: var(--background);
+}

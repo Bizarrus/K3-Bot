@@ -1,0 +1,79 @@
+{
+  "name": "K3 Bot",
+  "description": "Bot Browser Extension for Knuddels-Community ",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "k3-bot@bizarrus.github.com",
+      "strict_min_version": "42.0"
+    }
+  },
+
+  "icons": {
+    "48": "Assets/Icons/Logo.png"
+  },
+
+  "background": {
+    "scripts": [
+      "Classes/Backend.js"
+    ],
+    "persistent": true,
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.knuddels.de/*"
+      ],
+      "type": "module",
+      "js": [
+        "Classes/Iterator.js",
+        "Classes/Bridge.js",
+        "UI/Injector.js"
+      ],
+      "css": [
+        "UI/Injector.css"
+      ]
+    }, {
+      "all_frames": true,
+      "matches": [
+        "https://chatproxy.knuddels.de/apps/*"
+      ],
+      "js": [
+        "UI/Apps.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    "Classes/Logger.js",
+    "UI/AppLoader/API.js"
+  ],
+  "devtools_page": "UI/Pages/DeveloperTools.html",
+  "page_action": {
+    "default_title": "Knuddels",
+    "default_popup": "UI/Pages/Action.html",
+    "pinned": true,
+    "show_matches": [
+      "https://preview.knuddels.de/?*",
+      "https://app.knuddels.de/?*"
+    ],
+    "default_icon": {
+      "19": "Assets/Icons/Logo.png",
+      "38": "Assets/Icons/Logo.png"
+    }
+  },
+
+  "permissions": [
+    "storage",
+    "cookies",
+    "devtools",
+    "scripting",
+    "notifications",
+    "activeTab",
+    "tabs",
+    "webRequest",
+    "webRequestBlocking",
+    "*://*/*"
+  ]
+}

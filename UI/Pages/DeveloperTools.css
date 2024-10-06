@@ -1,0 +1,51 @@
+table [data-size="time"] {
+    min-width: 45px;
+    text-align: center;
+}
+
+table [data-size="type"] {
+    min-width: 65px;
+    text-align: center;
+}
+
+table [data-size="operation"] {
+    text-align: left;
+    min-width: calc(100vw - 400px);
+}
+
+table [data-size="initiator"] {
+    min-width: 50px;
+}
+
+table [data-size="receive"],
+table [data-size="send"] {
+    min-width: 55px;
+    text-align: right;
+}
+
+table label {
+    font-weight: bold;
+}
+
+table tfoot {
+    padding: 20px;
+}
+
+table tfoot tr td:nth-of-type(1) {
+    padding: 5px 10px;
+}
+
+table tfoot tr td:nth-of-type(2) {
+    padding: 5px 10px;
+}
+
+table tfoot tr td pre {
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    display: inline-block;
+    padding: 5px;
+    border-radius: var(--border-radius-small);
+    border: 1px solid var(--border);
+    background-color: var(--icon-color);
+}

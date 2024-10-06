@@ -1,0 +1,85 @@
+table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    flex: 1 auto;
+    table-layout: fixed;
+    overflow-wrap: break-word;
+    border-collapse: collapse;
+}
+
+table thead {
+    flex: 0 auto;
+    border-bottom: 1px solid var(--border);
+}
+
+table thead tr {
+    background: var(--background);
+    display: block;
+    flex: 1 auto;
+    width: 100%;
+}
+
+table thead tr th {
+    font-weight: normal;
+    background: var(--background);
+    border-left: 1px solid var(--border);
+    padding: 5px 10px;
+    font-size: 10px;
+}
+
+table thead tr th:first-child {
+    border-left: none;
+}
+
+table tbody {
+    overflow: auto;
+    flex: 1 auto;
+}
+
+table tbody tr {
+    display: block;
+    flex: 1 auto;
+    width: 100%;
+}
+
+table tbody tr td {
+    font-weight: normal;
+    border-left: 1px solid var(--border);
+    padding: 5px 10px;
+    font-size: 10px;
+}
+
+table tbody tr td:first-child {
+    border-left: none;
+}
+
+table tbody tr td:last-child {
+    width: 100%;
+}
+
+table tbody tr:nth-child(even) td {
+    background: var(--secondary);
+}
+
+table tbody tr:hover td {
+    background: #353B48;
+    cursor: pointer;
+}
+
+table tfoot {
+    border-top: 1px solid var(--border);
+    flex: 0 auto;
+    overflow: auto;
+    height: calc(100vh / 2);
+    background: var(--background-dark);
+}
+
+table tfoot.hide {
+    display: none;
+}
+
+table tfoot td {
+    vertical-align: top;
+}

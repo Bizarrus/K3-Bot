@@ -1,0 +1,14 @@
+ui-badge {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 1px 5px;
+    border-radius: var(--border-radius-small);
+}
+
+ui-badge[data-color="green"] {
+    background-color: var(--icon-color-success);
+}
+
+ui-badge[data-color="yellow"] {
+    background-color: var(--color-yellow-30);
+}
