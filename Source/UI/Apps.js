@@ -1,3 +1,8 @@
+/*
+*
+* Diese Datei wird in UserApps-Server oder Systemapps injiziiert.
+**/
+
 class Apps {
     constructor() {
         let location = window.location.href;

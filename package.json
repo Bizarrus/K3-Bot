@@ -1,0 +1,18 @@
+{
+  "name": "k3-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build-chrome": "node ./Bin/Build.js --target=chrome",
+    "build-mozilla": "node ./Bin/Build.js --target=mozilla",
+    "build": "node ./Bin/Build.js --target=chrome mozilla",
+    "watch": "node ./Bin/Build.js --watch --target=chrome mozilla"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "command-line-args": "^6.0.0",
+    "command-line-usage": "^7.0.3"
+  }
+}

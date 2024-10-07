@@ -55,6 +55,7 @@
     "default_popup": "UI/Pages/Action.html",
     "pinned": true,
     "show_matches": [
+      "https://chatproxy.knuddels.de/apps/*",
       "https://preview.knuddels.de/?*",
       "https://app.knuddels.de/?*"
     ],

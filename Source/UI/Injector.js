@@ -1,3 +1,8 @@
+const browser = browser || {
+    browserAction: chrome.action,
+    pageAction: chrome.action,
+};
+
 class Injector {
     Version = '1.0.0';
     Backend;

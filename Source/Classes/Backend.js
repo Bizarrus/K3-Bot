@@ -2,6 +2,7 @@
 * Dies ist das Backend-Script.
 * Dies blockt Web-Requests und kümmert sich um das Module-Handling.
 **/
+import browser from './Crossplattform.js';
 import Knuddels from './Knuddels.js';
 
 /* Modules */
