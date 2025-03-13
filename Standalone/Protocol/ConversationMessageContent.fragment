@@ -1,0 +1,55 @@
+fragment ConversationMessageContent on ConversationMessageContent {
+  ... on ConversationTextMessageContent {
+    ...ConversationTextMessageContent
+    __typename
+  }
+  ... on ConversationQuotedMessageContent {
+    ...ConversationQuotedMessageContent
+    __typename
+  }
+  ... on ConversationForwardedMessageContent {
+    ...ConversationForwardedMessageContent
+    __typename
+  }
+  ... on ConversationImageMessageContent {
+    ...ConversationImageMessageContent
+    __typename
+  }
+  ... on ConversationSnapMessageContent {
+    ...ConversationSnapMessageContent
+    __typename
+  }
+  ... on ConversationVisiblePhotoCommentMessageContent {
+    ...ConversationVisiblePhotoCommentMessageContent
+    __typename
+  }
+  ... on ConversationHiddenPhotoCommentMessageContent {
+    ...ConversationHiddenPhotoCommentMessageContent
+    __typename
+  }
+  ... on ConversationDeletedPhotoCommentMessageContent {
+    ...ConversationDeletedPhotoCommentMessageContent
+    __typename
+  }
+  ... on ConversationKnuddelTransferMessageContent {
+    ...ConversationKnuddelTransferMessageContent
+    __typename
+  }
+  ... on ConversationMentorAchievedMessageContent {
+    ...ConversationMentorAchievedMessageContent
+    __typename
+  }
+  ... on ConversationPrivateSystemMessageContent {
+    ...ConversationPrivateSystemMessageContent
+    __typename
+  }
+  ... on ConversationBirthdayMessageContent {
+    ...ConversationBirthdayMessageContent
+    __typename
+  }
+  ... on ConversationNicknameChangeMessageContent {
+    ...ConversationNicknameChangeMessageContent
+    __typename
+  }
+  __typename
+}

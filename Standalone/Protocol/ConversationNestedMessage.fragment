@@ -1,0 +1,12 @@
+fragment ConversationNestedMessage on ConversationNestedMessage {
+  sender {
+    ...MessengerBasicUser
+    __typename
+  }
+  timestamp
+  content {
+    ...ConversationNestedMessageContent
+    __typename
+  }
+  __typename
+}

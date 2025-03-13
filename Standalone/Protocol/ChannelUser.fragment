@@ -1,0 +1,11 @@
+fragment ChannelUser on User {
+  id
+  nick
+  age
+  gender
+  profilePicture {
+    urlLargeSquare
+    __typename
+  }
+  __typename
+}

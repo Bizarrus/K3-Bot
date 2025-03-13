@@ -1,0 +1,4 @@
+fragment ConversationBirthdayMessageContent on ConversationBirthdayMessageContent {
+  unused
+  __typename
+}

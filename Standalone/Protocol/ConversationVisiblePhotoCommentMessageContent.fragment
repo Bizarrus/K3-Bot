@@ -1,0 +1,7 @@
+fragment ConversationVisiblePhotoCommentMessageContent on ConversationVisiblePhotoCommentMessageContent {
+  albumPhotoId
+  commentId
+  photoUrl
+  formattedText
+  __typename
+}

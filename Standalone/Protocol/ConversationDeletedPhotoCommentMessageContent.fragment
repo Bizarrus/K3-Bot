@@ -1,0 +1,4 @@
+fragment ConversationDeletedPhotoCommentMessageContent on ConversationDeletedPhotoCommentMessageContent {
+  unused
+  __typename
+}

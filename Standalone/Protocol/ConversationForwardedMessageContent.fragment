@@ -1,0 +1,8 @@
+fragment ConversationForwardedMessageContent on ConversationForwardedMessageContent {
+  starred
+  nestedMessage {
+    ...ConversationNestedMessage
+    __typename
+  }
+  __typename
+}

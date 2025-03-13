@@ -1,0 +1,22 @@
+fragment FullConversationWithoutMessages on MessengerConversation {
+  id
+  visibility
+  otherParticipants {
+    ...MessengerOverviewUser
+    __typename
+  }
+  readState {
+    markedAsUnread
+    unreadMessageCount
+    lastReadConversationMessage {
+      id
+      __typename
+    }
+    __typename
+  }
+  latestConversationMessage {
+    ...ConversationMessage
+    __typename
+  }
+  __typename
+}

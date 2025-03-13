@@ -1,0 +1,7 @@
+fragment ProfileTag on ProfileTag {
+  displayName
+  isMatching
+  category
+  slashCommand
+  __typename
+}

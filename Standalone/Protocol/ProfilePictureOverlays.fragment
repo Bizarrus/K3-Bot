@@ -1,0 +1,5 @@
+fragment ProfilePictureOverlays on ProfilePictureOverlays {
+  urlsLarge
+  urlsSmall
+  __typename
+}

@@ -1,0 +1,4 @@
+fragment ConversationKnuddelTransferMessageContent on ConversationKnuddelTransferMessageContent {
+  knuddelAmount
+  __typename
+}

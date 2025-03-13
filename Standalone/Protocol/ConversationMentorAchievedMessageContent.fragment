@@ -1,0 +1,4 @@
+fragment ConversationMentorAchievedMessageContent on ConversationMentorAchievedMessageContent {
+  unused
+  __typename
+}

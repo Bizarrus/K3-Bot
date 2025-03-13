@@ -1,0 +1,19 @@
+fragment ActiveChannel on Channel {
+  id
+  name
+  users {
+    ...ChannelUser
+  }
+  groupInfo {
+    backgroundColor {
+      ...Color
+    }
+    backgroundImageInfo {
+      mode
+      url
+    }
+    highlightColor {
+      ...Color
+    }
+  }
+}
