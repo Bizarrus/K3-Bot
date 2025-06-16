@@ -9,9 +9,9 @@ export default class ClientVersion {
     constructor() {
         this.BuildInfo  = ClientProperties.get('build');
         let parts       = ClientProperties.get('version').split('.');
-        this.Major      = parts[0];
-        this.Minor      = parts[1];
-        this.Patch      = parts[2];
+        this.Major      = parseInt(parts[0]);
+        this.Minor      = parseInt(parts[1]);
+        this.Patch      = parseInt(parts[2]);
     }
 
     getVersion() {
