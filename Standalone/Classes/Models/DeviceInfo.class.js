@@ -6,7 +6,7 @@ export default class DeviceInfo {
 
     constructor() {
         this.Manufacturer   = ClientProperties.get('browser.name');
-        this.Version        = ClientProperties.get('browser.version');
+        this.Version        = '' + ClientProperties.get('browser.version');
     }
 
     getManufacturer() {
