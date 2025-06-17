@@ -3,6 +3,15 @@ import {template} from 'chalk-template';
 import StackTrace from 'stacktrace-js';
 
 const Logger = {
+    success: function success() {
+        this.__display(['success', ...arguments]);
+    },
+	warning: function warning() {
+        this.__display(['warning', ...arguments]);
+    },
+    danger: function danger() {
+        this.__display(...['danger', ...arguments]);
+    },
     info: function info() {
         this.__display.apply(console, [ 'info', ...arguments]);
     },
@@ -33,6 +42,18 @@ const Logger = {
                 type = 'Info';
                 color = '#244493';
             break;
+            case 'success':
+                type = 'Info';
+                color = '#008000';
+            break;
+            case 'danger':
+                type = 'Info';
+                color = '#971616';
+            break;
+            case 'warning':
+                type = 'Info';
+                color = '#a88516';
+            break;
             case 'warn':
                 type = 'WARNING';
                 color = '#a88516';
@@ -51,6 +72,10 @@ const Logger = {
             break;
         }
 
+		if(typeof(type) === 'undefined') {
+			return;
+		}
+		
         elements.unshift(Chalk.hex(color)('[' + type + ']'));
 
         if(output === 'debug') {
@@ -78,7 +103,16 @@ const Logger = {
             }
         });
 
-        this[output].apply(this, elements);
+		if(typeof(elements) === 'undefined') {
+			return;
+		}
+
+		if(typeof(output) === 'function') {
+			this[output].apply(this, elements);
+			return;
+		}
+        
+		console.log(...elements);		
     }
 };
 

@@ -4,5 +4,18 @@
             "nickname": "<nickname>",
             "password": "<password>"
         }
-    ]
+    ],
+	"Database": {
+		"CONNECTIONS":		10,
+		"HOSTNAME":			"localhost",
+		"PORT":				3306,
+		"USERNAME":			"root",
+		"PASSWORD":			"",
+		"DATABASE":			"knuddels",
+		"CHARSET":			"utf8mb4"		
+	},
+	"Logging": {
+		"MYSQL":		false,
+		"Request":		false
+	}
 }

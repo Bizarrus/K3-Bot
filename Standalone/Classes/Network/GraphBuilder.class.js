@@ -27,6 +27,10 @@ export default class GraphBuilder {
     }
 
     setAuthSession(session) {
+		if(session === null) {
+			return null;
+		}
+		
         let token = session.getConnectionToken();
 
         if(token === null) {

@@ -15,7 +15,7 @@ export default class QuestSolver extends IPlugin {
 
         /* Open Quest-System */
         this.Client.on('connected', () => {
-            this.Client.sendSlashCommand('/opensystemapp EngagementSystemApp');
+            //this.Client.sendSlashCommand('/opensystemapp EngagementSystemApp');
         });
 
         /* When Notification received */
@@ -49,7 +49,7 @@ export default class QuestSolver extends IPlugin {
                         this.solveQuest(quest);
                     break;
                     case 'active':
-                        console.info('[Quest] Try to Solve:', quest.title, quest.callToAction.label);
+                        console.info('[Quest] Try to Solve:', quest.title, quest.callToAction?.label);
 
                         switch(quest.callToAction.label) {
                             case 'Hobbies hinzufügen':

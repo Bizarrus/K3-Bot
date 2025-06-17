@@ -6,7 +6,7 @@ export default (new class Config {
     Config      = {
         nicknames: [],
         storage: {
-            sessions: true
+            sessions: false
         },
         connection: {
             heartbeat: 60000

@@ -73,17 +73,17 @@ export default class Client extends Events.EventEmitter {
             // @ToDo send Disconnect & co
 
             /* Leave Channel */
-            let graph = new GraphBuilder(Type.Mutation, 'LeaveChannel');
+            /*let graph = new GraphBuilder(Type.Mutation, 'LeaveChannel');
             graph.setAuthSession(this.AuthSession);
            
             GraphQL.call(graph).then((response) => {
                 Process.exit(-1);
-            });
+            });*/
 
             /* Exit after 5 Seconds if not already shutted down */
             setTimeout(() => {
                 Process.exit(-1);
-            }, 5000);
+            }, 1000);
         });
 
         this.loadPlugins();
@@ -568,36 +568,68 @@ export default class Client extends Events.EventEmitter {
             }).catch(failure);
         });
     }
-
+	
     loadPlugins() {
-        FileSystem.readdir('./Plugins', {}, (error, plugins) => {
-            if(error) {
-                console.error('[Plugin]', 'Error on Plugin-Loader:', error);
-                return;
-            }
+		FileSystem.readdir('./Plugins', { withFileTypes: true }, (error, entries) => {
+			if(error) {
+				console.error('[Plugin]', 'Error on Plugin-Loader:', error);
+				return;
+			}
 
-            plugins.forEach((plugin) => {
-                let path        = null;
-                let path_root   = Path.resolve(process.cwd(), 'Plugins', plugin, plugin + '.js');
-                let path_main   = Path.resolve(process.cwd(), 'Plugins', plugin);
+			entries.forEach((entry) => {
+				if(entry.isDirectory()) {
+					const pluginName = entry.name;
+					const pluginPath = Path.resolve(process.cwd(), 'Plugins', pluginName);
 
-                if(FileSystem.existsSync(path_root)) {
-                    path = path_root;
-                } else if(FileSystem.existsSync(path_main)) {
-                    path = path_main;
-                }
+					FileSystem.readdir(pluginPath, {
+						withFileTypes: true
+					}, (e, plugins) => {
+						if(e) {
+							console.error('[Plugin]', 'Error on Plugin-Loader:', e);
+							return;
+						}
 
-                if(path === null) {
-                    console.error('[Plugin]', 'Can\'t find Plugin-Class from', plugin);
-                    return;
-                }
-    
-                import('file:///' + path, {}).then((Clazz) => {
-                    this.Plugins[plugin] = new Clazz.default(this);
-                }).catch((error) => {
-                    console.error('[Plugin]', error);
-                });
-            });
-        });
+						plugins.forEach((plugin) => {
+							this.loadPlugin(plugin);
+						});
+					});
+				} else {
+					this.loadPlugin(entry);
+				}
+			});
+		});
     }
+
+	async loadPlugin(file) {
+		let path        = null;
+		let path_root   = Path.resolve(process.cwd(), file.parentPath, file.name);
+
+		if(FileSystem.existsSync(path_root)) {
+			path = path_root;
+		}
+
+		if(path === null) {
+			console.error('[Plugin]', 'Can\'t find Plugin-Class from', file);
+			return;
+		}
+
+		try {
+			let Clazz							= await import('file:///' + path, {});
+			this.Plugins[Clazz.default.name]	= new Clazz.default(this);
+		} catch(error) {
+			console.error('[Plugin]', file, path, error);
+		}
+	}
+	
+	getPlugins() {
+		return this.Plugins;
+	}
+	
+	getPlugin(name) {
+		if(typeof(this.Plugins[name]) === 'undefined') {
+			return null;
+		}
+		
+		return this.Plugins[name];
+	}
 }
