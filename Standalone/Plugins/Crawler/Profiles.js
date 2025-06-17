@@ -1,3 +1,4 @@
+import Config from '../../Classes/Config.class.js';
 import GraphBuilder from '../../Classes/Network/GraphBuilder.class.js';
 import { GraphQL, Type } from '../../Classes/Network/GraphQL.class.js';
 import IPlugin from '../../Classes/IPlugin.interface.js';
@@ -8,7 +9,7 @@ import Calendar from '../../Classes/Utils/Calendar.class.js';
 export default class Profiles extends IPlugin {
 	Client			= null;
 	Channels		= null;
-	Profiles		= [];
+	Profiles		= {};
 	Queue			= [];
 	Watcher			= null;
 	
@@ -29,40 +30,45 @@ export default class Profiles extends IPlugin {
 		});
 		
 		/* When new User added */
-		this.Channels.on('user', (user_id) => {
-			this.Profiles.push(user_id);
+		this.Channels.on('user', (user) => {
+			this.Profiles[user.id] = user;
 		});
     }
 	
 	handleProfileFetch() {
-		if(this.Profiles.length === 0) {
+		if(Object.keys(this.Profiles).length === 0) {
 			return;
 		}
 		
 		if(this.Queue.length === 0) {
-			this.Queue = [...this.Profiles];
-			Logger.info('[Crawler:Profiles]', 'Requeue Profiles.', this.Queue.length);
+			this.Queue = [...Object.values(this.Profiles)];
+			
+			if(Config.get('Logging.Plugins.Crawler.Profiles', true)) {
+				Logger.info('[Crawler:Profiles]', 'Requeue Profiles.', this.Queue.length);
+			}
 		}
 		
-		let id = this.Queue.shift();
+		let user = this.Queue.shift();
 		
-		if(typeof(id) === 'undefined' || id === null) {
+		if(typeof(user) === 'undefined' || user === null) {
 			return;
 		}
 		
-		Logger.info('[Crawler:Profiles]', 'Fetch', id);
-		this.fetchProfile(id);
-	}
-	
-	async fetchProfile(id) {
-		if(!isNaN(parseInt(id))) {
-			id = parseInt(id);
+		if(Config.get('Logging.Plugins.Crawler.Profiles', true)) {
+			Logger.info('[Crawler:Profiles]', 'Fetch', user);
 		}
 		
+		this.fetchProfile(user);
+	}
+	
+	async fetchProfile(user) {
 		if(await Database.exists('SELECT `id` FROM `profiles` WHERE `id`=:id AND (`time_updated` IS NULL OR `time_updated`<=(NOW() - INTERVAL 15 MINUTE)) LIMIT 1', {
-			id:	id
+			id:	user.id
 		})) {
-			Logger.danger('[Crawler:Profiles]', 'Ignore', id);
+			if(Config.get('Logging.Plugins.Crawler.Profiles', true)) {
+				Logger.danger('[Crawler:Profiles]', 'Ignore', user.nickname);
+			}
+			
 			return;
 		}
 		
@@ -72,7 +78,7 @@ export default class Profiles extends IPlugin {
 		profile.addFragment('ProfileFriendUser');
 		profile.addFragment('ProfileCommonFriendUser');
 		profile.addFragment('ProfilePictureOverlays');
-		profile.setVariable('userId', 		id);
+		profile.setVariable('userId', 		user.id);
 		profile.setVariable('pixelDensity', 1);
 		
 		GraphQL.call(profile).then(async (response) => {
@@ -81,7 +87,10 @@ export default class Profiles extends IPlugin {
 			if(await Database.exists('SELECT `id` from `profiles` WHERE `id`=:id LIMIT 1', {
 				id:	whois.id
 			})) {
-				Logger.warning('[Crawler:Profiles]', 'Update', id);
+				if(Config.get('Logging.Plugins.Crawler.Profiles', true)) {
+					Logger.warning('[Crawler:Profiles]', 'Update', user.nickname);
+				}
+				
 				Database.update('profiles', [ 'id' ], {
 					id:				whois.id,
 					city:			whois.city,
@@ -97,7 +106,10 @@ export default class Profiles extends IPlugin {
 					time_updated:	'NOW()'
 				});
 			} else {
-				Logger.success('[Crawler:Profiles]', 'Create', id);
+				if(Config.get('Logging.Plugins.Crawler.Profiles', true)) {
+					Logger.success('[Crawler:Profiles]', 'Create', user.nickname);
+				}
+				
 				Database.insert('profiles', {
 					id:				whois.id,
 					city:			whois.city,

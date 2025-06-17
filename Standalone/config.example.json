@@ -16,6 +16,13 @@
 	},
 	"Logging": {
 		"MYSQL":		false,
-		"Request":		false
+		"Request":		false,
+		"Plugins":		{
+			"Crawler":	{
+				"Channels": false,
+				"Profiles": false,
+				"Pictures": false
+			}
+		}
 	}
 }

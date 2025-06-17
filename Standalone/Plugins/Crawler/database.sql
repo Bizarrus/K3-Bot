@@ -56,6 +56,19 @@ CREATE TABLE `visits`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 57480 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
 
+-- Pictures
+DROP TABLE IF EXISTS `pictures`;
+
+CREATE TABLE `pictures`  (
+  `id` int(11) NOT NULL,
+  `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT NULL,
+  `checksum` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT NULL,
+  `binary` longblob NULL DEFAULT NULL,
+  `time_created` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+
+
 -- View: Count
 DROP VIEW IF EXISTS `Count`;
 CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `Count` AS select format((select count(0) from `users`),0,'de_DE') AS `users`,format((select count(0) from `profiles`),0,'de_DE') AS `profiles`;

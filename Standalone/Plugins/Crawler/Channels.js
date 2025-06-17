@@ -1,3 +1,4 @@
+import Config from '../../Classes/Config.class.js';
 import GraphBuilder from '../../Classes/Network/GraphBuilder.class.js';
 import { GraphQL, Type } from '../../Classes/Network/GraphQL.class.js';
 import IPlugin from '../../Classes/IPlugin.interface.js';
@@ -8,7 +9,7 @@ import Calendar from '../../Classes/Utils/Calendar.class.js';
 export default class Channels extends IPlugin {
 	Client			= null;
 	Channels		= {};
-	Profiles		= [];
+	Profiles		= {};
 	Queue			= [];
 	Watcher			= null;
 	
@@ -16,14 +17,20 @@ export default class Channels extends IPlugin {
         super();
 		this.Client = client;
 		
-		Database.fetch('SELECT `id` FROM `users` ORDER BY `time_updated` ASC').then((results) => {
+		Database.fetch('SELECT `id`, `nickname` FROM `users` ORDER BY `time_updated` ASC').then((results) => {
 			results.forEach((result) => {
-				if(this.Profiles.indexOf(parseInt(result.id)) === -1) {
-					this.Profiles.push(parseInt(result.id));
+				if(typeof(this.Profiles[parseInt(result.id)]) === 'undefined') {
+					this.Profiles[parseInt(result.id)] = {
+						id:			parseInt(result.id),
+						nickname:	result.nickname
+					};
 				}
 			});
 			
-			Logger.info('[Crawler:Channels]', 'Loaded', this.Profiles.length, 'User-ID\'s from Database.');
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.info('[Crawler:Channels]', 'Loaded', Object.keys(this.Profiles).length, 'User-ID\'s from Database.');
+			}
+			
 			this.emit('users');
 		});
 		
@@ -37,7 +44,9 @@ export default class Channels extends IPlugin {
 				}
 			});
 			
-			Logger.info('[Crawler:Channels]', 'Loaded', Object.keys(this.Channels).length, 'Channels from Database.');
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.info('[Crawler:Channels]', 'Loaded', Object.keys(this.Channels).length, 'Channels from Database.');
+			}
 		});
 		
 		this.Client.on('connected', () => {
@@ -59,14 +68,20 @@ export default class Channels extends IPlugin {
 		if(await Database.exists('SELECT `id` from `channels` WHERE `channel`=:id LIMIT 1', {
 			id:	channel.id
 		})) {
-			Logger.warning('[Channel]', 'Update', channel.name);
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.warning('[Channel]', 'Update', channel.name);
+			}
+			
 			Database.update('channels', [ 'channel' ], {
 				channel:		channel.id,
 				name:			channel.name,
 				time_updated:	'NOW()'
 			});
 		} else {
-			Logger.success('[Channel]', 'Create', channel.name);
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.success('[Channel]', 'Create', channel.name);
+			}
+			
 			Database.insert('channels', {
 				id:				null,
 				channel:		channel.id,
@@ -122,7 +137,10 @@ export default class Channels extends IPlugin {
 		
 		if(this.Queue.length === 0) {
 			this.Queue = [...Object.values(this.Channels)];
-			Logger.info('[Crawler:Channels]', 'Requeue Channels.', this.Queue.length);
+			
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.info('[Crawler:Channels]', 'Requeue Channels.', this.Queue.length);
+			}
 		}
 		
 		let channel = this.Queue.shift();
@@ -131,7 +149,9 @@ export default class Channels extends IPlugin {
 			return;
 		}
 		
-		Logger.info('[Crawler:Channel]', 'Fetch', channel);
+		if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+			Logger.info('[Crawler:Channel]', 'Fetch', channel);
+		}
 		
 		let request   = new GraphBuilder(Type.Query, 'GetChannel');
 		request.setAuthSession(this.Client.getSession());
@@ -165,14 +185,20 @@ export default class Channels extends IPlugin {
 		if(!(await Database.exists('SELECT `id` FROM `users` WHERE `id`=:id AND (`time_updated` IS NULL OR `time_updated`<=(NOW() - INTERVAL 1 DAY)) LIMIT 1', {
 			id:	user.id
 		}))) {
-			Logger.danger('[Crawler:User]', 'Ignore', user.id);
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.danger('[Crawler:User]', 'Ignore', user.id);
+			}
+			
 			return;
 		}
 		
 		if(await Database.exists('SELECT `id` from `users` WHERE `id`=:id LIMIT 1', {
 			id:	user.id
 		})) {
-			Logger.warning('[Crawler:User]', 'Update', user.nick);
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.warning('[Crawler:User]', 'Update', user.nick);
+			}
+			
 			Database.update('users', [ 'id' ], {
 				id:				user.id,
 				nickname:		user.nick,
@@ -181,7 +207,10 @@ export default class Channels extends IPlugin {
 				time_updated:	'NOW()'
 			});
 		} else {
-			Logger.success('[Crawler:User]', 'Create', user.nick);
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.success('[Crawler:User]', 'Create', user.nick);
+			}
+			
 			Database.insert('users', {
 				id:				user.id,
 				nickname:		user.nick,
@@ -192,9 +221,13 @@ export default class Channels extends IPlugin {
 			});
 		}
 		
-		if(this.Profiles.indexOf(parseInt(user.id)) === -1) {
-			this.Profiles.push(parseInt(user.id));
-			this.emit('user', user.id);
+		if(typeof(this.Profiles[parseInt(user.id)]) === 'undefined') {
+			this.Profiles[parseInt(user.id)] = {
+				id:			parseInt(user.id),
+				nickname:	user.nick
+			};
+			
+			this.emit('user', this.Profiles[parseInt(user.id)]);
 		}
 	}
 	
