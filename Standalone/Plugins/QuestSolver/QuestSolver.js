@@ -1,3 +1,4 @@
+import Config from '../../Classes/Config.class.js';
 import GraphBuilder from '../../Classes/Network/GraphBuilder.class.js';
 import { GraphQL, Type } from '../../Classes/Network/GraphQL.class.js';
 import Photo from '../../Classes/Network/Photo.class.js';
@@ -10,6 +11,10 @@ export default class QuestSolver extends IPlugin {
 
     constructor(client) {
         super();
+		
+		if(!Config.get('Plugins.QuestSolver.Enabled', true)) {
+			return;
+		}
 
         this.Client = client;
 

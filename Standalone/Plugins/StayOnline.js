@@ -1,3 +1,4 @@
+import Config from '../Classes/Config.class.js';
 import IPlugin from '../Classes/IPlugin.interface.js';
 
 export default class StayOnline extends IPlugin {
@@ -6,6 +7,10 @@ export default class StayOnline extends IPlugin {
     
     constructor(client) {
         super();
+		
+		if(!Config.get('Plugins.Crawler.Enabled', true)) {
+			return;
+		}
 
         setInterval(() => {
             let channel = client.getCurrentChannel();
