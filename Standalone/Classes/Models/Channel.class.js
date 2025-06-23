@@ -76,9 +76,13 @@ export default class Channel extends Events.EventEmitter {
         return this.Users;
     }
 
-    join(password) {
+    join(password, confirmed) {
         if(typeof(password) === 'undefined') {
             password = null;
+        }
+		
+        if(typeof(confirmed) === 'undefined') {
+            confirmed = false;
         }
 
         return new Promise((success, failure) => {
@@ -88,7 +92,7 @@ export default class Channel extends Events.EventEmitter {
             graph.addFragment('Color');
             graph.addFragment('ChannelJoinError');  
             graph.setVariable('name',       this.Name);
-            graph.setVariable('confirmed',  false);
+            graph.setVariable('confirmed',  confirmed);
             graph.setVariable('password',   password);
             graph.setAuthSession(this.Client.getSession());
     
