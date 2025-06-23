@@ -17,15 +17,24 @@ export default class Channels extends IPlugin {
         super();
 		this.Client = client;
 		
-		Database.fetch('SELECT `id`, `nickname` FROM `users` ORDER BY `time_updated` ASC').then((results) => {
-			results.forEach((result) => {
-				if(typeof(this.Profiles[parseInt(result.id)]) === 'undefined') {
-					this.Profiles[parseInt(result.id)] = {
-						id:			parseInt(result.id),
-						nickname:	result.nickname
+		if(!Config.get('Plugins.Crawler.Enabled', true)) {
+			return;
+		}
+		
+		Database.fetch('SELECT `id`, `nickname` FROM `users` ORDER BY `time_updated` IS NOT NULL, `time_updated` ASC').then((results) => {
+			for(const {
+				id,
+				nickname
+			} of results) {
+				const parsedId = parseInt(id, 10);
+				
+				if(!this.Profiles[parsedId]) {
+					this.Profiles[parsedId] = {
+						id: parsedId,
+						nickname
 					};
 				}
-			});
+			}
 			
 			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
 				Logger.info('[Crawler:Channels]', 'Loaded', Object.keys(this.Profiles).length, 'User-ID\'s from Database.');
@@ -34,26 +43,33 @@ export default class Channels extends IPlugin {
 			this.emit('users');
 		});
 		
-		Database.fetch('SELECT `channel`, `name` FROM `channels` ORDER BY `time_updated` ASC').then((results) => {
-			results.forEach((result) => {
-				if(typeof(this.Channels[result.channel]) === 'undefined') {
-					this.Channels[result.channel] = {
-						id:		result.channel,
-						name:	result.name
+		Database.fetch('SELECT `channel`, `name`, `time_updated` FROM `channels` ORDER BY `time_updated` IS NOT NULL, `time_updated` ASC').then((results) => {
+			for(const {
+				channel,
+				name,
+				time_updated
+			} of results) {
+				if(!this.Channels[channel]) {
+					this.Channels[channel] = {
+						id: channel,
+						name,
+						time_updated: (time_updated === null ? new Date('1970-01-01T00:00:00.000Z') : new Date(time_updated))
 					};
 				}
-			});
+			}
 			
 			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
 				Logger.info('[Crawler:Channels]', 'Loaded', Object.keys(this.Channels).length, 'Channels from Database.');
 			}
+			
+			this.emit('channels');
 		});
 		
 		this.Client.on('connected', () => {
-			this.getChannels().then((channels) => {
-				channels.forEach((channel) => {
-					this.addChannel(channel);
-				});
+			this.fetchChannels().then(async (channels) => {
+				for(const channel of channels) {
+					await this.addChannel(channel);
+				}
 				
 				this.Watcher = setInterval(() => {
 					this.getChannelMembers();
@@ -65,6 +81,13 @@ export default class Channels extends IPlugin {
     }
 	
 	async addChannel(channel) {
+		if(!channel.id.endsWith(':1')) {
+			Database.delete('channels', {
+				channel: channel.id
+			});
+			return;
+		}
+		
 		if(await Database.exists('SELECT `id` from `channels` WHERE `channel`=:id LIMIT 1', {
 			id:	channel.id
 		})) {
@@ -72,7 +95,7 @@ export default class Channels extends IPlugin {
 				Logger.warning('[Channel]', 'Update', channel.name);
 			}
 			
-			Database.update('channels', [ 'channel' ], {
+			await Database.update('channels', [ 'channel' ], {
 				channel:		channel.id,
 				name:			channel.name,
 				time_updated:	'NOW()'
@@ -82,7 +105,7 @@ export default class Channels extends IPlugin {
 				Logger.success('[Channel]', 'Create', channel.name);
 			}
 			
-			Database.insert('channels', {
+			await Database.insert('channels', {
 				id:				null,
 				channel:		channel.id,
 				name:			channel.name,
@@ -91,15 +114,18 @@ export default class Channels extends IPlugin {
 			});
 		}
 		
-		if(typeof(this.Channels[channel.id]) === 'undefined') {
+		if(!this.Channels[channel.id]) {
 			this.Channels[channel.id] = {
-				id:		channel.id,
-				name:	channel.name
+				id:				parseInt(channel.id),
+				name:			channel.name,
+				time_updated:	new Date()
 			};
+
+			this.emit('channel', this.Channels[channel.id]);
 		}
 	}
 	
-	async getChannels() {
+	async fetchChannels() {
 		return new Promise(async (success, failure) => {
 			let results		= [];
 			let channels	= new GraphBuilder(Type.Query, 'GetChannelListOverview');
@@ -117,35 +143,34 @@ export default class Channels extends IPlugin {
 			channels.setVariable('pixelDensity',	1);
 			
 			return GraphQL.call(channels).then((response) => {
-				response.channel.categories.forEach((categories) => {
-					categories.channelGroups.forEach((group) => {
-						group.channels.forEach((room) => {
-							results.push(room);
-						});	
-					});
-				});
-				
-				success(results);
+				success(response.channel.categories.flatMap(category =>
+					category.channelGroups.flatMap(group => group.channels)
+				));
 			}).catch(failure);
 		});
 	}
 	
 	async getChannelMembers() {
-		if(Object.keys(this.Channels).length === 0) {
+		if(!Object.keys(this.Channels).length) {
 			return;
 		}
 		
-		if(this.Queue.length === 0) {
-			this.Queue = [...Object.values(this.Channels)];
-			
+		if(!this.Queue.length) {
+			this.Queue = Object.values(this.Channels).sort((a, b) => {
+				const timeA	= a.time_updated ? new Date(a.time_updated).getTime() : 0;
+				const timeB	= b.time_updated ? new Date(b.time_updated).getTime() : 0;
+				
+				return timeA - timeB;
+			});
+
 			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
 				Logger.info('[Crawler:Channels]', 'Requeue Channels.', this.Queue.length);
 			}
 		}
-		
-		let channel = this.Queue.shift();
-		
-		if(typeof(channel) === 'undefined' || channel === null) {
+
+		const channel = this.Queue.shift();
+
+		if(!channel) {
 			return;
 		}
 		
@@ -160,16 +185,43 @@ export default class Channels extends IPlugin {
 		request.addFragment('Color');
 		request.setVariable('channelId', channel.id);
 		
-		GraphQL.call(request).then((response) => {
-			response.channel.channel.users.forEach(async (user) => {
-				this.addNickname(user);
-			});
+		GraphQL.call(request).then(async (response) => {
+			this.updateChannel(channel, response.channel.channel.groupInfo);
+			
+			for(const user of response.channel.channel.users) {
+				await this.addNickname(user);
+			}
 		}).catch((error) => {
-			console.log(error);
+			if(error.hasError('NOT_FOUND')) {
+				Logger.debug('ERR', 'Channel not exists', channel, error);
+				/*Database.delete('channels', {
+					channel: channel.id
+				});
+				this.Channels[channel.id] = null;*/
+			} else {
+				Logger.debug('Exception', error);
+			}
+			
+			process.exit(0);
 		});
 	}
 	
-	async addNickname(user) {
+	async updateChannel(channel, info) {
+		if(!channel.id.endsWith(':1')) {
+			return;
+		}
+		
+		await Database.update('channels', [ 'channel' ], {
+			channel:			channel.id,
+			name:				channel.name,
+			background:			(info.backgroundImageInfo === null ? null : JSON.stringify(info.backgroundImageInfo)),
+			color_background:	JSON.stringify(info.backgroundColor),
+			color_highlight:	JSON.stringify(info.highlightColor),
+			time_updated:		'NOW()'
+		});
+	}
+	
+	async addNickname(user) {		
 		if(!(await Database.exists('SELECT `id` from `visits` WHERE `user`=:id AND `date`=:date LIMIT 1', {
 			id:		user.id,
 			date:	Calendar.getDate()
@@ -181,37 +233,23 @@ export default class Channels extends IPlugin {
 			});
 		}
 		
-		// Nick-Cache age = 1 day renewal
-		if(!(await Database.exists('SELECT `id` FROM `users` WHERE `id`=:id AND (`time_updated` IS NULL OR `time_updated`<=(NOW() - INTERVAL 1 DAY)) LIMIT 1', {
-			id:	user.id
-		}))) {
-			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
-				Logger.danger('[Crawler:User]', 'Ignore', user.id);
-			}
-			
-			return;
-		}
-		
-		if(await Database.exists('SELECT `id` from `users` WHERE `id`=:id LIMIT 1', {
-			id:	user.id
-		})) {
-			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
-				Logger.warning('[Crawler:User]', 'Update', user.nick);
-			}
-			
-			Database.update('users', [ 'id' ], {
-				id:				user.id,
-				nickname:		user.nick,
-				age:			user.age,
-				gender:			user.gender,
-				time_updated:	'NOW()'
-			});
-		} else {
+		const userCheck = await Database.single(`SELECT
+			id, 
+			(time_updated IS NULL OR time_updated <= (NOW() - INTERVAL 1 DAY)) AS outdated
+		FROM
+			users 
+		WHERE
+			id=:id
+		LIMIT 1`, {
+			id: user.id
+		});
+
+		if(!userCheck) {
 			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
 				Logger.success('[Crawler:User]', 'Create', user.nick);
 			}
 			
-			Database.insert('users', {
+			await Database.insert('users', {
 				id:				user.id,
 				nickname:		user.nick,
 				age:			user.age,
@@ -219,16 +257,34 @@ export default class Channels extends IPlugin {
 				time_created:	'NOW()',
 				time_updated:	null
 			});
+		} else if(userCheck.outdated) {
+			if(Config.get('Logging.Plugins.Crawler.Channels', true)) {
+				Logger.warning('[Crawler:User]', 'Update', user.nick);
+			}
+			
+			await Database.update('users', [ 'id' ], {
+				id:				user.id,
+				nickname:		user.nick,
+				age:			user.age,
+				gender:			user.gender,
+				time_updated:	'NOW()'
+			});
 		}
 		
-		if(typeof(this.Profiles[parseInt(user.id)]) === 'undefined') {
-			this.Profiles[parseInt(user.id)] = {
-				id:			parseInt(user.id),
+		const id = parseInt(user.id);
+		
+		if(typeof(this.Profiles[id]) === 'undefined') {
+			this.Profiles[id] = {
+				id:			id,
 				nickname:	user.nick
 			};
 			
-			this.emit('user', this.Profiles[parseInt(user.id)]);
+			this.emit('user', this.Profiles[id]);
 		}
+	}
+	
+	getChannels() {
+		return this.Channels;
 	}
 	
 	getUsers() {

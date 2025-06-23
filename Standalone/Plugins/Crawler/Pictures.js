@@ -7,6 +7,7 @@ import Database from '../../Classes/Database.class.js';
 import Calendar from '../../Classes/Utils/Calendar.class.js';
 import Fetch from 'node-fetch';
 import Crypto from 'node:crypto';
+import FileSystem from 'node:fs/promises';
 
 export default class Pictures extends IPlugin {
 	Client			= null;
@@ -18,17 +19,18 @@ export default class Pictures extends IPlugin {
     constructor(client) {
         super();
 		
+		if(!Config.get('Plugins.Crawler.Enabled', true)) {
+			return;
+		}
+		
 		this.Client		= client;
 		this.Channels	= this.Client.getPlugin('Channels');
 		
 		
 		/* When Users inited */
 		this.Channels.on('users', () => {
-			this.Profiles = this.Channels.getUsers();
-			
-			this.Watcher = setInterval(() => {
-				this.handleProfileFetch();
-			}, 500);
+			this.Profiles	= this.Channels.getUsers();
+			this.Watcher	= setInterval(() => this.handleProfileFetch(), 500);
 		});
 		
 		/* When new User added */
@@ -37,7 +39,7 @@ export default class Pictures extends IPlugin {
 		});
     }
 	
-	handleProfileFetch() {
+	async handleProfileFetch() {
 		if(Object.keys(this.Profiles).length === 0) {
 			return;
 		}
@@ -52,7 +54,7 @@ export default class Pictures extends IPlugin {
 		
 		let user = this.Queue.shift();
 		
-		if(typeof(user) === 'undefined' || user === null) {
+		if(!user) {
 			return;
 		}
 		
@@ -60,37 +62,50 @@ export default class Pictures extends IPlugin {
 			Logger.info('[Crawler:Pictures]', 'Fetch', user.nickname);
 		}
 		
-		this.fetchProfile(user);
+		try {
+			await this.fetchProfile(user);
+		} catch(error) {
+			Logger.error('[Crawler:Pictures]', 'Fetch error', error);
+		}
 	}
 	
 	async fetchProfile(user) {
 		const url = this.createURL(user.nickname);
-		
-		Fetch(url).then(async (response) => {
-			if(response.status === 200) {
-				const buffer	= Buffer.from(await response.arrayBuffer());
-				const checksum	= Crypto.createHash('sha256').update(buffer).digest('hex');
-				
-				if(!(await Database.exists('SELECT `id` from `pictures` WHERE `id`=:id AND `checksum`=:checksum LIMIT 1', {
-					id:			user.id,
-					checksum:	checksum
-				}))) {
-					if(Config.get('Logging.Plugins.Crawler.Pictures', true)) {
-						Logger.success('[Crawler:Pictures]', 'Download', user.nickname);
-					}
-					
-					Database.insert('pictures', {
-						id:				user.id,
-						url:			url,
-						checksum:		checksum,
-						binary:			buffer,
-						time_created:	'NOW()'
-					});
+
+		try {
+			const response = await Fetch(url);
+			
+			if(response.status !== 200) {
+				if(Config.get('Logging.Plugins.Crawler.Pictures', true)) {
+					Logger.warning('[Crawler:Pictures]', 'Image not found', user.nickname);
 				}
+				return;
 			}
-		}).catch((error) => {
-			console.error(error);
-		});
+
+			const buffer	= Buffer.from(await response.arrayBuffer());
+			const checksum	= Crypto.createHash('sha256').update(buffer).digest('hex');
+
+			if(!await Database.exists('SELECT `id` FROM `pictures` WHERE `user`=:id AND `checksum`=:checksum LIMIT 1', {
+				id: user.id,
+				checksum
+			})) {
+				if(Config.get('Logging.Plugins.Crawler.Pictures', true)) {
+					Logger.success('[Crawler:Pictures]', 'Download', user.nickname);
+				}
+
+				const id = await Database.insert('pictures', {
+					id:				null,
+					user:			user.id,
+					time_created:	'NOW()',
+					url,
+					checksum
+				});
+
+				await FileSystem.writeFile(`./storage/pictures/profiles/${id}.img`, buffer);
+			}
+		} catch(error) {
+			Logger.error('[Crawler:Pictures]', 'FetchProfile error', error);
+		}
 	}
 	
 	createURL(nickname) {
@@ -122,16 +137,4 @@ export default class Pictures extends IPlugin {
 		
 		return result;
 	}
-	
-	/*
-	__fetchEventRequest {
-		"id":"0.7979768482321417",
-		"data":{
-			"userId":68984856,
-			"scope":"Photo",
-			"reportId":"d297c57b-97d9-4712-97e6-aa9701fe71ae",
-			"reasonId":"0.7",
-			"reportType":"PHOTO"
-		},"key":"getReportedData"}
-	*/
 }
