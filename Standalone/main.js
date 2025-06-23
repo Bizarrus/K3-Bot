@@ -51,14 +51,18 @@ class Main {
 
         this.client.on('response', (data) => {
             if(data instanceof CurrentServerTime) {
-                Logger.info('[Bot]', 'CurrentServerTime', data.get());
+               // Logger.info('[Bot]', 'CurrentServerTime', data.get());
             } else if(data instanceof KeepOnlineV2) {
-                Logger.info('[Bot]', 'KeepOnlineV2', data.get());
+               // Logger.info('[Bot]', 'KeepOnlineV2', data.get());
             } else if(data instanceof Ping) {
-                Logger.info('[Bot]', 'Ping');
+                //Logger.info('[Bot]', 'Ping');
             } else {
-                Logger.info('[Bot]', 'Response', data);
-            }
+                //Logger.info('[Bot]', 'Response', data);
+           
+				if(typeof(data.response) !== 'undefined') {
+					Logger.debug('ERRORS', data.response);
+				}
+			}			
         });
     }
 
