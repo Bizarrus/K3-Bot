@@ -1,3 +1,4 @@
+import Config from '../Classes/Config.class.js';
 import IPlugin from '../Classes/IPlugin.interface.js';
 
 export default class DailyLogin extends IPlugin {
@@ -10,6 +11,10 @@ export default class DailyLogin extends IPlugin {
     */
     constructor(client) {
         super();
+		
+		if(!Config.get('Plugins.DailyLogin.Enabled', true)) {
+			return;
+		}
 
         client.on('message', (channel, message) => {
             if(message === null) {
@@ -21,7 +26,7 @@ export default class DailyLogin extends IPlugin {
                 let found = false;
 
                 /* Iterate over all text segments */
-                message.get().formattedText.list.items.forEach((entry) => {
+                message.get()?.formattedText?.list?.items?.forEach((entry) => {
 
                     /* If the text segment contains a smiley */
                     if(typeof(entry.smiley) !== 'undefined') {
