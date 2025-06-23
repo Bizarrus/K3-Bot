@@ -5,12 +5,26 @@
             "password": "<password>"
         }
     ],
+	"Plugins": {
+		"StayOnline": {
+			"Enabled": false
+		},
+		"DailyLogin": {
+			"Enabled": false
+		},
+		"QuestSolver": {
+			"Enabled": false
+		},
+		"Crawler": {
+			"Enabled": true
+		}
+	},
 	"Database": {
-		"CONNECTIONS":		10,
+		"CONNECTIONS":		2,
 		"HOSTNAME":			"localhost",
 		"PORT":				3306,
-		"USERNAME":			"root",
-		"PASSWORD":			"",
+		"USERNAME":			"crawler",
+		"PASSWORD":			"knuddelscrawling",
 		"DATABASE":			"knuddels",
 		"CHARSET":			"utf8mb4"		
 	},
@@ -19,9 +33,11 @@
 		"Request":		false,
 		"Plugins":		{
 			"Crawler":	{
-				"Channels": false,
-				"Profiles": false,
-				"Pictures": false
+				"Channels": 	false,
+				"Profiles": 	false,
+				"Pictures": 	false,
+				"Albums": 		false,
+				"ChannelInfo":	false
 			}
 		}
 	}
