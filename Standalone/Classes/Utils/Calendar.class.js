@@ -12,4 +12,11 @@ export default new class Calendar {
 	getDate() {
 		return new Date().toISOString().slice(0, 10);
 	}
+	
+	convertToDatetime(input) {
+		const [datePart, timePart]	= input.split(' ');
+		const [day, month, year]	= datePart.split('.');
+		
+		return `${year}-${month}-${day} ${timePart}`;
+	}
 }();
