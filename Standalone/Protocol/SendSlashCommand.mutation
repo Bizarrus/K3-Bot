@@ -3,16 +3,23 @@ mutation SendSlashCommand($event: SlashCommandInput!) {
 		sendSlashCommand(event: $event) {
 			... on SendSlashCommandSuccess {
 				unused
+				__typename
 			}
 			... on SendSlashCommandInternalError {
 				unused
+				__typename
 			}
 			... on SendSlashCommandNotFoundError {
 				unused
+				__typename
 			}
 			... on SendSlashCommandNotSupportedError {
 				unused
+				__typename
 			}
+			__typename
 		}
+		__typename
 	}
+	__typename
 }
