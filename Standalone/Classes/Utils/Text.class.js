@@ -24,6 +24,10 @@ export default class Text {
     getNick() {
         return this.Message.sender.nick;
     }
+	
+	getText() {
+		return this.Message.formattedText;
+	}
 
     getString(entry, placeholder) {
         if(typeof(placeholder) === 'undefined') {
