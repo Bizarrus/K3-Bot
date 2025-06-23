@@ -106,7 +106,40 @@ export const GraphQL = (new class GraphQL {
         document:       builder.toString(),
         variables:      JSON.parse(JSON.stringify(builder.getVariables())),
         requestHeaders: Object.fromEntries(headers),
-      }).then(success).catch(failure);
+      }).then((response) => {
+		  response.hasError = function() {
+			  return false;
+		  };
+		  
+		  success(response);
+	  }).catch((response) => {
+		  response.hasError = function(search) {
+			  let bool = false;
+			  
+			  if(typeof(response.response.errors) !== 'undefined') {
+				  if(response.response.errors.length >= 1) {
+					  if(typeof(search) === 'undefined') {
+						bool = true;
+					  }
+					  
+					  if(!bool) {
+						  response.response.errors.forEach((e) => {
+							  if(bool) {
+								  return;
+							  }
+							 if(e.message.indexOf(search) !== -1) {
+									bool = true;
+							 }							 
+						  });
+					  }
+				  }
+			  }
+			  
+			  return bool;
+		  };
+		  
+		  failure(response);
+	  });
     });
   }
 }());
