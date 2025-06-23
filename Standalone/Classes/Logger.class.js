@@ -94,9 +94,13 @@ const Logger = {
                 try {
                     entry = template(entry);
                 } catch(e) {
-                    if(typeof(JSON.parse(entry)) == "object"){
-                        entry = Chalk.hex('#444444')(entry);
-                    }
+                    try {
+						if(typeof(JSON.parse(entry)) == "object"){
+							entry = Chalk.hex('#444444')(entry);
+						}
+					} catch(e2) {
+						
+					}
                 }
                 
                 elements[index] = entry;
