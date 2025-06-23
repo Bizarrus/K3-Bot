@@ -143,6 +143,18 @@ export default class Client extends Events.EventEmitter {
 
             this.addSubscription(new AppEvents, (data) => {
                 switch(data.appId) {
+					// Channel-info
+					case 'ChannelInfoWindowApp':
+						let pageData    = JSON.parse(data.pageData);
+						let dataUrl     = pageData.config.pageDataLoadUrl;
+
+						if(dataUrl.startsWith('data:,')) {
+							let info = JSON.parse(decodeURIComponent(escape(atob(dataUrl.substring(6)))));
+
+							this.emit('info', info);
+						}
+					break;
+					
                     // Quests
                     case 'EngagementSystemApp':
                         switch(data.eventKey) {
@@ -209,7 +221,13 @@ export default class Client extends Events.EventEmitter {
                     let channel = this.Channels[id];
 
                     if(typeof(data.msg) !== 'undefined' && data.msg !== null) {
-                        this.emit('message', channel, new Text(data.msg));
+						let text	= new Text(data.msg);
+						
+						if(text.toString().indexOf('Dieser Channel hat folgendes Thema:') !== -1) {
+							this.emit('topic', channel, text.getText());
+						}
+						
+                        this.emit('message', channel, text);
                     } else {
                         this.emit('message', channel, null);
                     }
@@ -616,6 +634,8 @@ export default class Client extends Events.EventEmitter {
 		try {
 			let Clazz							= await import('file:///' + path, {});
 			this.Plugins[Clazz.default.name]	= new Clazz.default(this);
+			
+			this.emit('plugin_' + Clazz.default.name, this.Plugins[Clazz.default.name]);
 		} catch(error) {
 			console.error('[Plugin]', file, path, error);
 		}
