@@ -70,22 +70,17 @@ export default (new class Database {
 		return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 	}
 	
-	exists(query, data, object) {
+	delete(table, data) {
+		let where = [];
+		
+		for(let name in data) {
+			let value = data[name];
+			
+			where.push('`' + name + '`=:' + name);
+		}
+		
 		return new Promise((success, failure) => {
-			this.fetch(query, data, object).then((result) => {
-				if(result.length === 0 || typeof(result[0]) === 'undefined') {
-					success(false);
-					return;
-				}
-				
-				success(true);
-			}).catch(failure);
-		});
-	}
-	
-	single(query, data, object) {
-		return new Promise((success, failure) => {
-			this.fetch(query, data, object).then((result) => {
+			this.fetch('DELETE FROM `' + table + '` WHERE ' + where.join(' AND '), data).then((result) => {
 				if(result.length === 0 || typeof(result[0]) === 'undefined') {
 					success(null);
 					return;
@@ -96,11 +91,33 @@ export default (new class Database {
 		});
 	}
 	
-	fetch(query, data, object) {
-		if(typeof(object) === 'undefined') {
-			object = null;
-		}
-		
+	exists(query, data) {
+		return new Promise((success, failure) => {
+			this.fetch(query, data).then((result) => {
+				if(result.length === 0 || typeof(result[0]) === 'undefined') {
+					success(false);
+					return;
+				}
+				
+				success(true);
+			}).catch(failure);
+		});
+	}
+	
+	single(query, data) {
+		return new Promise((success, failure) => {
+			this.fetch(query, data).then((result) => {
+				if(result.length === 0 || typeof(result[0]) === 'undefined') {
+					success(null);
+					return;
+				}
+				
+				success(result[0]);
+			}).catch(failure);
+		});
+	}
+	
+	fetch(query, data) {		
 		return new Promise((success, failure) => {
 			this.Connection.getConnection(function(connection_error, connection) {
 				if(connection_error) {
@@ -114,24 +131,6 @@ export default (new class Database {
 					if(query_error) {
 						failure(query_error);
 						return;
-					}
-					
-					if(object !== null) {
-						const construct = object.toString().match(/constructor\s*\(([^)]*)\)/);
-						const args		= construct ? construct[1].split(',').map(arg => arg.trim()) : [];
-						
-						results.forEach((row, index) => {
-							let instance = new object(...args.map(arg => row[arg]));
-							
-							/* Bind others */
-							Object.entries(row).forEach(([ name, value ]) => {
-								if(args.indexOf(name) === -1) {
-									instance[name] = value;
-								}
-							});
-							
-							results[index] = instance;
-						});
 					}
 					
 					success(results);
