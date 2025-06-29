@@ -19,17 +19,19 @@ export default class Albums extends IPlugin {
     constructor(client) {
         super();
 		
-		if(!Config.get('Plugins.StayOnline.Enabled', true)) {
+		if(!Config.get('Plugins.Crawler.Enabled', true)) {
 			return;
 		}
 		
 		this.Client		= client;
 		this.Channels	= this.Client.getPlugin('Channels');
-		
 		this.Client.on('plugin_Channels',	this.onPluginChannels.bind(this));
     }
 	
 	onPluginChannels(plugin) {
+		this.updateCommentsStatistics();
+		this.updateAlbumsStatistics();
+		
 		/* When Users inited */
 		plugin.on('users', () => {
 			this.Profiles	= plugin.getUsers();
@@ -128,8 +130,28 @@ export default class Albums extends IPlugin {
 				time_created:	'NOW()',
 				time_posted:	new Date(comment.time)
 			});
+			
+			this.updateCommentsStatistics();
 		}
-	};
+	}
+	
+	async updateCommentsStatistics() {
+		let statistics	= await Database.single('SELECT COUNT(`id`) AS `total` FROM `comments` WHERE `type`=\'PROFILE\'');
+		
+		await Database.update('statistics', [ 'name' ], {
+			name:	'comments_photo',
+			value:	statistics.total
+		});
+	}
+	
+	async updateAlbumsStatistics() {
+		let statistics	= await Database.single('SELECT COUNT(`id`) AS `total` FROM `albums`');
+		
+		await Database.update('statistics', [ 'name' ], {
+			name:	'albums',
+			value:	statistics.total
+		});		
+	}
 
 	async saveAlbums(user, albums = []) {
 		if(!Array.isArray(albums)) {
@@ -162,13 +184,14 @@ export default class Albums extends IPlugin {
 			const id		= await Database.insert('albums', data);
 			const created	= { ...data, id: id };
 			await this.saveAlbumPictures(album, created);
+			this.updateAlbumsStatistics();
 		}
 	}
 	
 	async saveAlbumPictures(album, database) {
 		if(album?.photos) {
 			for(const photo of album.photos) {
-				console.log(photo.id, photo.url);
+				//console.log(photo.id, photo.url);
 			}
 		}
 		

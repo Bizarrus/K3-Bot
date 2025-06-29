@@ -23,6 +23,7 @@ export default class Profiles extends IPlugin {
 		this.Client		= client;
 		this.Channels	= this.Client.getPlugin('Channels');
 		
+		this.updateStatistics();
 		
 		/* When Users inited */
 		this.Channels.on('users', () => {
@@ -38,6 +39,15 @@ export default class Profiles extends IPlugin {
 			this.Profiles[user.id] = user;
 		});
     }
+	
+	async updateStatistics() {
+		let statistics	= await Database.single('SELECT COUNT(`id`) AS `total` FROM `profiles`');
+		
+		await Database.update('statistics', [ 'name' ], {
+			name:	'profiles',
+			value:	statistics.total
+		});
+	}
 	
 	async handleProfileFetch() {
 		if(Object.keys(this.Profiles).length === 0) {
@@ -125,6 +135,8 @@ export default class Profiles extends IPlugin {
 					time_created:	'NOW()',
 					time_updated:	null
 				});
+				
+				this.updateStatistics();
 			}
 		} catch (error) {
 			Logger.error('[Crawler:Profiles]', 'FetchProfile Error', error);

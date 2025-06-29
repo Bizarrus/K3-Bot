@@ -43,7 +43,9 @@ export default class Channels extends IPlugin {
 			this.emit('users');
 		});
 		
-		Database.fetch('SELECT `channel`, `name`, `time_updated` FROM `channels` ORDER BY `time_updated` IS NOT NULL, `time_updated` ASC').then((results) => {
+		this.updateMemberStatistics();
+		
+		Database.fetch('SELECT `channel`, `name`, `time_updated` FROM `channels` WHERE `time_deleted` IS NULL ORDER BY `time_updated` IS NOT NULL, `time_updated` ASC').then((results) => {
 			for(const {
 				channel,
 				name,
@@ -65,6 +67,8 @@ export default class Channels extends IPlugin {
 			this.emit('channels');
 		});
 		
+		this.updateChannelStatistics();
+			
 		this.Client.on('connected', () => {
 			this.fetchChannels().then(async (channels) => {
 				for(const channel of channels) {
@@ -79,6 +83,33 @@ export default class Channels extends IPlugin {
 			});
 		});
     }
+	
+	async updateChannelStatistics() {
+		let statistics	= await Database.single('SELECT COUNT(*) AS `total` FROM (SELECT REPLACE (`channels`.`channel`, \':1\', \'\') AS `channel_id` FROM `channels` WHERE `channels`.`channel` LIKE \'%:1\' GROUP BY REPLACE (`channels`.`channel`, \':1\', \'\')) AS `channels`');
+		
+		await Database.update('statistics', [ 'name' ], {
+			name:	'channels',
+			value:	statistics.total
+		});		
+	}
+	
+	async updateMemberStatistics() {
+		let statistics	= await Database.single(`SELECT
+			COUNT(id) AS users,
+			SUM(CASE WHEN gender = 'MALE' THEN 1 ELSE 0 END) AS male,
+			SUM(CASE WHEN gender = 'FEMALE' THEN 1 ELSE 0 END) AS female,
+			SUM(CASE WHEN gender = 'NONBINARY_HE' THEN 1 ELSE 0 END) AS binary_he,
+			SUM(CASE WHEN gender = 'NONBINARY_SHE' THEN 1 ELSE 0 END) AS binary_she,
+			SUM(CASE WHEN gender = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknown
+		FROM users;`);
+		
+		for(let name in statistics) {
+			await Database.update('statistics', [ 'name' ], {
+				name:	name,
+				value:	statistics[name]
+			});
+		}
+	}
 	
 	async addChannel(channel) {
 		if(!channel.id.endsWith(':1')) {
@@ -112,6 +143,8 @@ export default class Channels extends IPlugin {
 				time_created:	'NOW()',
 				time_updated:	null
 			});
+			
+			this.updateChannelStatistics();
 		}
 		
 		if(!this.Channels[channel.id]) {
@@ -193,16 +226,17 @@ export default class Channels extends IPlugin {
 			}
 		}).catch((error) => {
 			if(error.hasError('NOT_FOUND')) {
-				Logger.debug('ERR', 'Channel not exists', channel, error);
-				/*Database.delete('channels', {
-					channel: channel.id
+				Logger.error('[Crawler:Channels]', 'Channel ', channel.name, ' (' + channel.id + ') not exists');
+				Database.update('channels', [ 'channel' ],  {
+					channel:		channel.id,
+					time_deleted:	'NOW()'
 				});
-				this.Channels[channel.id] = null;*/
+				this.Channels[channel.id] = null;
 			} else {
 				Logger.debug('Exception', error);
 			}
 			
-			process.exit(0);
+			//process.exit(0);
 		});
 	}
 	
@@ -281,6 +315,8 @@ export default class Channels extends IPlugin {
 			
 			this.emit('user', this.Profiles[id]);
 		}
+		
+		this.updateMemberStatistics();
 	}
 	
 	getChannels() {

@@ -26,6 +26,7 @@ export default class Pictures extends IPlugin {
 		this.Client		= client;
 		this.Channels	= this.Client.getPlugin('Channels');
 		
+		this.updateStatistics();
 		
 		/* When Users inited */
 		this.Channels.on('users', () => {
@@ -38,6 +39,15 @@ export default class Pictures extends IPlugin {
 			this.Profiles[user.id] = user;
 		});
     }
+	
+	async updateStatistics() {
+		let statistics	= await Database.single('SELECT COUNT(`id`) AS `total` FROM `pictures`');
+		
+		await Database.update('statistics', [ 'name' ], {
+			name:	'pictures',
+			value:	statistics.total
+		});
+	}
 	
 	async handleProfileFetch() {
 		if(Object.keys(this.Profiles).length === 0) {
@@ -100,6 +110,8 @@ export default class Pictures extends IPlugin {
 					url,
 					checksum
 				});
+				
+				this.updateStatistics();
 
 				await FileSystem.writeFile(`./storage/pictures/profiles/${id}.img`, buffer);
 			}
