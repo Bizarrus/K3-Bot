@@ -1,6 +1,6 @@
 {
     "nicknames": [
-        {
+		{
             "nickname": "<nickname>",
             "password": "<password>"
         }
@@ -33,6 +33,7 @@
 		"Request":		false,
 		"Plugins":		{
 			"Crawler":	{
+				"AI": 			false,
 				"Channels": 	false,
 				"Profiles": 	false,
 				"Pictures": 	false,
