@@ -57,7 +57,7 @@ class Main {
             } else if(data instanceof Ping) {
                 //Logger.info('[Bot]', 'Ping');
             } else {
-                //Logger.info('[Bot]', 'Response', data);
+                // Logger.info('[Bot]', 'Response', data);
            
 				if(typeof(data.response) !== 'undefined') {
 					Logger.debug('ERRORS', data.response);
