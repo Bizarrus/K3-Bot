@@ -8,7 +8,7 @@ import Crypto from 'node:crypto';
 import FileSystem from 'node:fs/promises';
 import Path from 'node:path';
 
-export default class KICheck extends IPlugin {	
+export default class AICheck extends IPlugin {	
     constructor(client) {
         super();
 		
@@ -75,8 +75,10 @@ export default class KICheck extends IPlugin {
 				});
 			
 				if(!response.ok) {
-					const text = await response.text();
-					throw new Error(`HTTP ${response.status}: ${text}`);
+					if(Config.get('Logging.Plugins.Crawler.AI', true)) {
+						Logger.info('[Crawler:AICheck]', 'Error on API:', await response.text());
+					}
+					return;
 				}
 
 				const json = await response.json();
@@ -91,8 +93,12 @@ export default class KICheck extends IPlugin {
 		const best		= result.reduce((previous, current) => (current.score > previous.score ? current : previous), result[0]);
 		const ki_value	= [ 'not_ai_generated', 'none' ].indexOf(best.class) !== -1 ? 0 : best.score * 100;
 
-		console.log('Best:',		best);
-		console.log('ki_value:',	ki_value);
+		if(Config.get('Logging.Plugins.Crawler.AI', true)) {
+			Logger.info('[Crawler:AICheck]', {
+				BestValue:	best,
+				AIValue:	ki_value
+			});
+		}
 
 		await Database.update('pictures', [ 'id' ], {
 			id:			picture.id,
