@@ -5,7 +5,6 @@ import IPlugin from '../../Classes/IPlugin.interface.js';
 import Logger from '../../Classes/Logger.class.js';
 import Database from '../../Classes/Database.class.js';
 import Calendar from '../../Classes/Utils/Calendar.class.js';
-import Fetch from 'node-fetch';
 import Crypto from 'node:crypto';
 import FileSystem from 'node:fs/promises';
 
@@ -83,7 +82,7 @@ export default class Pictures extends IPlugin {
 		const url = this.createURL(user.nickname);
 
 		try {
-			const response = await Fetch(url);
+			const response = await fetch(url);
 			
 			if(response.status !== 200) {
 				if(Config.get('Logging.Plugins.Crawler.Pictures', true)) {

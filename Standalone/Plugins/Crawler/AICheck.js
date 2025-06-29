@@ -2,8 +2,9 @@ import Config from '../../Classes/Config.class.js';
 import IPlugin from '../../Classes/IPlugin.interface.js';
 import Logger from '../../Classes/Logger.class.js';
 import Database from '../../Classes/Database.class.js';
-import FormData from 'form-data';
-import Fetch from 'node-fetch';
+import { FormData } from 'formdata-node';
+import { FormDataEncoder } from 'form-data-encoder';
+import { Readable } from 'stream';
 import Crypto from 'node:crypto';
 import FileSystem from 'node:fs/promises';
 import Path from 'node:path';
@@ -45,45 +46,36 @@ export default class AICheck extends IPlugin {
 				throw new Error('Broken Image');
 			}
 
-			form.append('media', buffer, {
-				filename:		`picture_${Date.now()}.jpg`,
-				contentType:	'image/jpeg'
-			});
-			
-			form.append('request_id', Crypto.randomUUID());
-			
-			form.getLength(async (error, length) => {
-				if(error) {
-					throw error;
-				}
-				
-				const response = await Fetch('https://plugin.hivemoderation.com/api/v1/image/ai_detection', {
-					method:				'POST',
-					body:				form,
-					mode:				'cors',
-					cache:				'no-cache',
-					credentials:		'same-origin',
-					redirect:			'follow',
-					referrerPolicy:		'no-referrer',
-					headers:  {
-						...form.getHeaders(),
-						'Content-Length':	length,
-						'Origin':			'chrome-extension://cmeikcgfecnhojcbfapbmpbjgllklcbi',
-						'Accept':			'application/json, text/plain, */*',
-						'User-Agent':		'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0'
-					}
-				});
-			
-				if(!response.ok) {
-					if(Config.get('Logging.Plugins.Crawler.AI', true)) {
-						Logger.info('[Crawler:AICheck]', 'Error on API:', await response.text());
-					}
-					return;
-				}
+			form.set('media', new Blob([ buffer ], { type: 'image/jpeg' }), `picture_${Date.now()}.jpg`);
+			form.set('request_id', Crypto.randomUUID());
 
-				const json = await response.json();
-				this.saveResult(picture, json.data.classes);
+			const encoder	= new FormDataEncoder(form);
+			const response	= await fetch('https://plugin.hivemoderation.com/api/v1/image/ai_detection', {
+				method:				'POST',
+				body:				Readable.from(encoder.encode()),
+				mode:				'cors',
+				cache:				'no-cache',
+				credentials:		'same-origin',
+				redirect:			'follow',
+				duplex:				'half',
+				referrerPolicy:		'no-referrer',
+				headers:  {
+					...encoder.headers,
+					'Origin':			'chrome-extension://cmeikcgfecnhojcbfapbmpbjgllklcbi',
+					'Accept':			'application/json, text/plain, */*',
+					'User-Agent':		'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0'
+				}
 			});
+		
+			if(!response.ok) {
+				if(Config.get('Logging.Plugins.Crawler.AI', true)) {
+					Logger.info('[Crawler:AICheck]', 'Error on API:', await response.text());
+				}
+				return;
+			}
+
+			const json = await response.json();
+			this.saveResult(picture, json.data.classes);
 		} catch(error) {
 			console.log(error);
 		}

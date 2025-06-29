@@ -1,29 +1,31 @@
 {
   "name": "k3bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "K3-Bot for Kn-Community",
   "main": "main.js",
   "type": "module",
   "scripts": {
     "start": "node --no-warnings .",
-    "pm2": "pm2 start ./pm2.json"
+    "pm2": "pm2 start ./pm2.json",
+    "check": "npx depcheck"
   },
   "author": "Bizarrus",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.3.0",
     "chalk-template": "^1.1.0",
-    "form-data": "^4.0.3",
+    "form-data-encoder": "^4.1.0",
+    "formdata-node": "^6.0.3",
     "graphql": "^16.9.0",
     "graphql-request": "^7.1.2",
     "http-build-query": "^0.7.0",
     "jpeg-js": "^0.4.4",
     "mysql": "^2.18.1",
-    "node-fetch": "^3.3.2",
     "node-html-parser": "^6.1.13",
-    "pngjs": "^7.0.0",
-    "request": "^2.88.2",
     "stacktrace-js": "^2.0.2",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "depcheck": "^1.4.7"
   }
 }
