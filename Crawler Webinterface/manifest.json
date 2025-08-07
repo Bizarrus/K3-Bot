@@ -1,0 +1,14 @@
+{
+  "name":		"",
+  "short_name":	"",
+  "icons": [
+    {
+      "src":	"/images/icon.svg",
+      "type":	"image/svg"
+    }
+  ],
+  "start_url":			"/",
+  "theme_color":		"#5865F2",
+  "background_color":	"#313338",
+  "display":			"standalone"
+}
