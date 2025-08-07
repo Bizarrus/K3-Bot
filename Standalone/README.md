@@ -14,11 +14,11 @@
 - [x] Full `GraphQL` fragments, querys, enums, subscriptions & mutations (See [Protocol](./Protocol/))
 
 # Implemented Subscriptions
-- [ ] ChannelEvents
-- [ ] AppEvents
-- [ ] ClientSettings
+- [x] ChannelEvents
+- [x] AppEvents
+- [x] ClientSettings
 - [ ] Notification
-- [ ] SystemEvents
+- [x] SystemEvents
 - [ ] MentorEvents
 - [ ] HasKnuddelsPlusChanged
 - [ ] TanSystemSubscription
@@ -44,3 +44,11 @@
 - [x] StayOnline (sends each 4 Minutes a random Text)
 - [x] DailyLogin (automatically collects the daily login)
 - [ ] QuestSolver (automatically solve quests)
+- [x] Crawler (fetching data)
+  - [ ] Download Albums(-Pictures)
+  - [x] Download Profile-Pictures
+  - [x] Download Picture Comments
+  - [x] Fetch ChannelInfo (/info)
+  - [x] Fetch some Profiles (and their data)
+  - [x] Fetch Channels
+  - [x] AI Check (checks automatically pictures with Hive-API)
