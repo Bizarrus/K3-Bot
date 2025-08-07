@@ -12,6 +12,8 @@ class Main {
         this.client     = new Client(this);
 
         this.client.on('auth', (error, session) => {
+			console.warn("AUTH", Config.getUser(0));
+			
             if(error) {
                 Logger.error(error);
                 return;
@@ -48,7 +50,7 @@ class Main {
 				}
 			}
         });
-
+		
         this.client.on('response', (data) => {
             if(data instanceof CurrentServerTime) {
                // Logger.info('[Bot]', 'CurrentServerTime', data.get());

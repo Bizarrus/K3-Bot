@@ -1,0 +1,32 @@
+{
+    "apps": [
+        {
+            "name": "Crawler",
+            "instance_var": "Crawler",
+			"script": "\/var\/www\/knuddels\/Crawler\/main.js",
+            "args": "",
+            "watch": true,
+			"cron_restart": "0 * * * *",
+            "ignore_watch": [
+                "[\\\/\\]\\.\/",
+                "node_modules",
+                "logs"
+            ],
+            "max_memory_restart": "250M",
+            "instances": 1,
+            "exec_mode": "fork",
+            "cwd": "\/var\/www\/knuddels\/Crawler\/",
+            "error_file": "\/var\/www\/knuddels\/Logs\/Client.error",
+            "out_file": "\/var\/www\/knuddels\/Logs\/Client.log",
+            "log_file": "\/dev\/null",
+            "env": {
+                "NODE_ENV": "development",
+                "TZ": "Europe\/Berlin"
+            },
+            "env_production": {
+                "NODE_ENV": "production",
+                "TZ": "Europe\/Berlin"
+            }
+        }
+    ]
+}

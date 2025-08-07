@@ -368,6 +368,7 @@ export default class Client extends Events.EventEmitter {
                     this.emit('auth', error, null);
                 });
             }).catch((error) => {
+				error += ': ' + user.nickname;
                 failure(error);
                 this.emit('auth', error, null);
             });

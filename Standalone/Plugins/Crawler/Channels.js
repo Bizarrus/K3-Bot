@@ -85,7 +85,7 @@ export default class Channels extends IPlugin {
     }
 	
 	async updateChannelStatistics() {
-		let statistics	= await Database.single('SELECT COUNT(*) AS `total` FROM (SELECT REPLACE (`channels`.`channel`, \':1\', \'\') AS `channel_id` FROM `channels` WHERE `channels`.`channel` LIKE \'%:1\' GROUP BY REPLACE (`channels`.`channel`, \':1\', \'\')) AS `channels`');
+		let statistics	= await Database.single('SELECT COUNT(*) AS `total` FROM (SELECT REPLACE (`channels`.`channel`, \':1\', \'\') AS `channel_id` FROM `channels` WHERE `channels`.`channel` LIKE \'%:1\' AND `time_deleted` IS NULL GROUP BY REPLACE (`channels`.`channel`, \':1\', \'\')) AS `channels`');
 		
 		await Database.update('statistics', [ 'name' ], {
 			name:	'channels',

@@ -37,6 +37,10 @@ export default class AICheck extends IPlugin {
 	}
 	
 	async createRequest(picture) {
+		if(picture === null) {
+			return;
+		}
+		
 		try {
 			const form		= new FormData();
 			const file		= Path.resolve(`/var/www/knuddels/Crawler/storage/pictures/profiles/${picture.id}.img`);
