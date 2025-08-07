@@ -1,0 +1,14 @@
+INSERT INTO `statistics` VALUES (14, 'unknown', 21);
+INSERT INTO `statistics` VALUES (13, 'binary_she', 528);
+INSERT INTO `statistics` VALUES (12, 'binary_he', 220);
+INSERT INTO `statistics` VALUES (11, 'female', 36593);
+INSERT INTO `statistics` VALUES (10, 'male', 70784);
+INSERT INTO `statistics` VALUES (9, 'comments_albums', 0);
+INSERT INTO `statistics` VALUES (8, 'comments_photo', 176792);
+INSERT INTO `statistics` VALUES (7, 'pictures', 21632);
+INSERT INTO `statistics` VALUES (6, 'albums_pictures', 0);
+INSERT INTO `statistics` VALUES (5, 'ai_checked', 21632);
+INSERT INTO `statistics` VALUES (4, 'albums', 6130);
+INSERT INTO `statistics` VALUES (3, 'profiles', 38001);
+INSERT INTO `statistics` VALUES (2, 'users', 108146);
+INSERT INTO `statistics` VALUES (1, 'channels', 666);
